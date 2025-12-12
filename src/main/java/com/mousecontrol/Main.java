@@ -4,8 +4,12 @@ package com.mousecontrol;
 import com.mousecontrol.communication.TCPServer;
 import com.mousecontrol.controller.MouseController;
 import com.mousecontrol.processor.MovementProcessor;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class Main {
+
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args)  {
 
@@ -31,7 +35,7 @@ public class Main {
             Thread.currentThread().join();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Unhandled exception in main", e);
         }
 
 
