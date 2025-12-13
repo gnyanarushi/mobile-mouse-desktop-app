@@ -3,6 +3,8 @@ package com.mousecontrol.processor;
 import com.mousecontrol.controller.MouseController;
 import com.mousecontrol.models.MotionData;
 
+import java.awt.*;
+
 /**
  * MovementProcessor
  *
@@ -18,6 +20,7 @@ import com.mousecontrol.models.MotionData;
 public class MovementProcessor {
 
     private final MouseController mouse;
+    private UICallback uiCallback;  // Optional UI callback
 
     // Tunable parameters (defaults are conservative)
     private double sensitivity = 10.0;    // pixels per gyro unit
@@ -33,6 +36,17 @@ public class MovementProcessor {
 
     public MovementProcessor(MouseController mouse) {
         this.mouse = mouse;
+    }
+
+    // ===== UI Callback Interface =====
+    public interface UICallback {
+        void onGyroUpdate(double gyroX, double gyroY);
+        void onCursorMove(int moveX, int moveY);
+        void onCursorPosition(int x, int y);
+    }
+
+    public void setUICallback(UICallback callback) {
+        this.uiCallback = callback;
     }
 
     // ===== setters for runtime tuning =====
@@ -75,6 +89,11 @@ public class MovementProcessor {
         double gx = data.gyroX - calibX;
         double gy = data.gyroY - calibY;
 
+        // Notify UI of raw gyro values
+        if (uiCallback != null) {
+            uiCallback.onGyroUpdate(gx, gy);
+        }
+
         // 2) Dead zone: treat small fluctuations as zero to reduce noise
         gx = Math.abs(gx) < deadZone ? 0.0 : gx;
         gy = Math.abs(gy) < deadZone ? 0.0 : gy;
@@ -100,9 +119,26 @@ public class MovementProcessor {
         int moveX = (int) Math.round(dx);
         int moveY = (int) Math.round(dy);
 
+        // DEBUG: Log processing details
+        System.out.printf("Gyro: (%.3f, %.3f) -> Raw: (%.2f, %.2f) -> Smoothed: (%.2f, %.2f) -> Pixels: (%d, %d)%n",
+                gx, gy, rawDx, rawDy, dx, dy, moveX, moveY);
+
+        // Notify UI of cursor movement
+        if (uiCallback != null && (moveX != 0 || moveY != 0)) {
+            uiCallback.onCursorMove(moveX, moveY);
+        }
+
         // 7) Perform movement if there is a non-zero delta
         if (moveX != 0 || moveY != 0) {
             mouse.moveBy(moveX, moveY);
+            // Notify UI of new cursor position
+            if (uiCallback != null) {
+                PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+                if (pointerInfo != null) {
+                    java.awt.Point pos = pointerInfo.getLocation();
+                    uiCallback.onCursorPosition((int)pos.getX(), (int)pos.getY());
+                }
+            }
         }
 
         // 8) Handle clicks

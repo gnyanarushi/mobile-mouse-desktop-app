@@ -21,6 +21,15 @@ public class TCPServer {
 
     private final int port;
     private final MovementProcessor processor;
+    private ServerCallback serverCallback;
+
+    public interface ServerCallback {
+        void onConnectionStatusChanged(String status);
+    }
+
+    public void setServerCallback(ServerCallback callback) {
+        this.serverCallback = callback;
+    }
 
     public TCPServer(int port, MovementProcessor processor) {
         this.port = port;
@@ -34,10 +43,17 @@ public class TCPServer {
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(port)) {
                 System.out.println("TCP Server running on port " + port);
+                if (serverCallback != null) {
+                    serverCallback.onConnectionStatusChanged("Waiting for connection on port " + port);
+                }
 
                 // Accept a single connection (your phone)
                 Socket client = serverSocket.accept();
-                System.out.println("Client connected: " + client.getRemoteSocketAddress());
+                String clientAddress = client.getRemoteSocketAddress().toString();
+                System.out.println("Client connected: " + clientAddress);
+                if (serverCallback != null) {
+                    serverCallback.onConnectionStatusChanged("Connected: " + clientAddress);
+                }
 
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -57,6 +73,9 @@ public class TCPServer {
 
             } catch (Exception e) {
                 System.err.println("TCP Server error: " + e.getMessage());
+                if (serverCallback != null) {
+                    serverCallback.onConnectionStatusChanged("Error: " + e.getMessage());
+                }
                 e.printStackTrace();
             }
         }).start();
