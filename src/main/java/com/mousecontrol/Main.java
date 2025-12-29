@@ -28,6 +28,7 @@ public class Main {
 
     public static void main(String[] args)  {
 
+
         System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
         System.out.println("║     Mobile Mouse Controller - Desktop Application           ║");
         System.out.println("╚═══════════════════════════════════════════════════════════╝\n");
@@ -106,7 +107,7 @@ public class Main {
         System.out.println("╚═══════════════════════════════════════════════════════════╝\n");
 
         try {
-            // Create UI first
+            // Create headless dashboard (no Swing window will be created)
             DashboardUI dashboard = new DashboardUI();
             dashboard.addLog("Initializing...");
 
@@ -115,7 +116,9 @@ public class Main {
             MovementProcessor processor = new MovementProcessor(mouse);
 
             // Tuning defaults - adjusted for small gyro values
-            processor.setSensitivity(10.0);   // Lower sensitivity for clearer, slower movements
+            // Reduced sensitivity so movements are slower/less jumpy by default
+            // (was 10.0). You can further tune this value as needed.
+            processor.setSensitivity(2.0);
             processor.setSmoothing(0.1);      // Less smoothing to preserve movement
             processor.setDeadZone(0.0);       // Disable dead zone for testing
 
