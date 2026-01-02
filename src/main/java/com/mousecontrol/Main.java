@@ -2,7 +2,10 @@ package com.mousecontrol;
 
 
 import com.mousecontrol.communication.TCPServer;
+import com.mousecontrol.communication.UDPStreamer;
+import com.mousecontrol.communication.WebSocketStreamer;
 import com.mousecontrol.controller.MouseController;
+import com.mousecontrol.controller.KeyboardController;
 import com.mousecontrol.processor.MovementProcessor;
 import com.mousecontrol.ui.DashboardUI;
 import java.util.logging.Logger;
@@ -12,7 +15,7 @@ public class Main {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
-    /**
+    /**9
      * Check if xdotool is installed on the system
      */
     private static boolean checkXdotoolInstalled() {
@@ -90,7 +93,7 @@ public class Main {
                 System.out.println("  • Command: sudo apt-get install xdotool");
                 System.out.println("  • After install, restart the application\n");
                 System.out.println("  ⚠️  Fallback: Using Robot class (may require sudo)");
-                System.out.println("  • If cursor doesn't move, run: sudo ./gradlew run\n");
+                System.out.println("  • If cursor doesn't move, run: sudo ./gradlew run");
             }
 
             System.out.println("  💡 Troubleshooting:");
@@ -150,10 +153,24 @@ public class Main {
                     dashboard.addLog(status);
                 }
             });
+
+            // Create and attach UDPStreamer with sane defaults
+            UDPStreamer streamer = new UDPStreamer(1100); // fragment size ~1100 bytes
+            server.setUdpStreamer(streamer);
+
+            // Create and attach KeyboardController
+            KeyboardController kc = new KeyboardController();
+            server.setKeyboardController(kc);
+
+            // Create and attach WebSocketStreamer (optional)
+            WebSocketStreamer ws = new WebSocketStreamer();
+            server.setWebSocketStreamer(ws);
+
             server.start();
 
             dashboard.addLog("TCP Server started on port 5000");
             dashboard.addLog("Waiting for connection from Flutter...");
+            dashboard.addLog("Tip: You can start WebSocket streaming by sending a control JSON over TCP: {\"websocket\":{\"cmd\":\"start\",\"port\":8080}}\n");
 
             // Keep app running
             Thread.currentThread().join();

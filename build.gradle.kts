@@ -20,6 +20,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.json:json:20230227")
+    implementation("org.java-websocket:Java-WebSocket:1.5.3")
 }
 
 application {
@@ -29,4 +30,3 @@ application {
 tasks.test {
     useJUnitPlatform()
 }
-
